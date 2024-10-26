@@ -54,14 +54,22 @@ app.delete('/alumnos/:no_control', async (req, res) => {
     try {
         const noControl = req.params.no_control;
         db = await connect();
-        const query = `DELETE FROM alumnos WHERE no_control=${noControl}`;
+        //const query = `DELETE FROM alumnos WHERE no_control=${noControl}`;
+        const query = `CALL SP_REMOVE_ALUMNO(${noControl})`;
         const [rows] = await db.execute(query);
-        console.log(rows);
-
-        res.json({
-            data: rows,
-            status: 200
-        });
+        if(rows.affectedRows === 0) {
+            res.json({
+                data: {},
+                msg: 'El valor no fue encontrado',
+                status: 404
+            });
+        } else {
+            res.json({
+                data: {},
+                msg: 'Dato eliminado correctamente',
+                status: 200
+            });
+        }
     } catch(err) {
         console.error(err);
     } finally {
@@ -74,9 +82,9 @@ app.post('/alumnos', async (req, res) =>{
     let db;
     try {
         const { no_control, nombre, apellidos } = req.body;
-        
+         
         db = await connect();
-        const query = `INSERT INTO alumnos VALUE ('${no_control}', '${nombre}', '${apellidos}')`;
+        const query = `CALL SP_CREATE_ALUMNO(${no_control},${nombre}, ${apellidos})`;
         const [rows] = await db.execute(query);
         console.log(rows);
 
@@ -117,5 +125,5 @@ app.put('/alumnos/:no_control', async (req, res) => {
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-    console.log('Server connected....');
-})
+    console.log('Server connected....' + PORT);
+});
